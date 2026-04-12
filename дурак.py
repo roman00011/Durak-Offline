@@ -1,101 +1,6 @@
 from random import *
 from time import *
-def first_player_turn():
-    global layer_down
-    global user_cards
-    global trump_card
-    print('выберите карты которыми хотите походить(номера карт через пробел пример: "1 3 5")')
-    user_text=input()
-    if len(user_text)==1:
-        index_=int(user_text)-1
-        layer_down.append(user_cards[index_])
-        user_cards.pop(index_)
-    else:
-        indexes_=list(map(int,user_text.split(' ')))
-        n=set([])
-        for i in indexes_:
-            ui=i-1
-            if user_cards[ui][-2:]==trump_card[-2:]:
-                usr_crds=int(user_cards[ui][0:-2])-20
-                n.add(usr_crds)
-                layer_down.append(user_cards[ui])
-            else:
-                n.add(int(user_cards[ui][0:-2]))
-                layer_down.append(user_cards[ui])
-        if len(n)>1:
-            print('ебать ты шулер')
-            print()
-            layer_down.clear()
-            first_player_turn()
-            return
-        for i in indexes_:
-            ui=i-1
-            user_cards.insert(ui,'0')
-            user_cards.pop(ui+1)
-        user_cards_=[]
-        for i in user_cards:
-            if i!='0':
-                user_cards_.append(i)
-        user_cards=user_cards_
-        
-def bot_defense_turn():
-    global bot_cards
-    global layer_down
-    global layer_up
-    global trump_card
-    ld=len(layer_down)
-
-
-    for i in layer_down:
-        bot_cards=bot_defense_turn_utilite(i,bot_cards)
-
-    if len(layer_up)<ld:
-        bot_cards.extend(layer_down)
-        bot_cards.extend(layer_up)
-        layer_down.clear()
-        layer_up.clear()
-    else:
-        discard_layer_down.extend(layer_down)
-        layer_down.clear()
-        discard_layer_up.extend(layer_up)
-        layer_up.clear()
-        
-def bot_defense_turn_utilite(i,bot_cards):
-    global layer_down
-    global layer_up
-    #print(f'layer_down: {layer_down}')
-    #print(f'bot_cards: {bot_cards}')
-    #print()
-    l1=len(bot_cards)
-    for o in bot_cards:
-        if i[-1]==o[-1] and int(i[0:-2])<int(o[0:-2]) or int(i[0:-2])<int(o[0:-2])-10:   
-            layer_up.append(o)
-            bot_cards.remove(o)
-            return bot_cards
-    l2=len(bot_cards)
-    if l2==l2:
-        return bot_cards
-
-            
-        
-        
-        
-        
-        
-    
-    
-    
-def check_trump_card(card):
-    global trump_card
-    cards=[]
-    for y in card:
-        if y[-1]==trump_card[-1]:
-            tr=int(y[0:-2])+20
-            cards.append(str(tr)+y[-2:])
-        else:
-            cards.append(y)
-    return cards
-            
+###########################################################################вывод карт#############################################################################
 def print_cards(cards,text):
     global trump_card
     print(text)
@@ -205,11 +110,88 @@ def print_unknown_cards(cards,text):
     print(unification(p0))
     print(f'                 У противника {len(cards)} карт')
     print()
-def tire():
-    for i in range(20):
-        print()
+#####################################################################################################################################################################################
+
+def first_player_turn():     #первый ход игрока в цикле(помещение выбранных карт в layer_down и их удаление в прошлом хранилище)
+    global layer_down
+    global user_cards
+    global trump_card
+    print('выберите карты которыми хотите походить(номера карт через пробел пример: "1 3 5")')
+    user_text=input()       #номер карты
+    if len(user_text)==1:   #ход одной картой
+        index_=int(user_text)-1
+        layer_down.append(user_cards[index_])
+        user_cards.pop(index_)
+    else:                   #ход несколькими картами
+        input_num_cards=list(map(int,user_text.split(' ')))
+        similar_num=set([])
+        for num_cards in input_num_cards:      #перебор номеров
+            index_cards=num_cards-1            #номера становятся индексами
+            if user_cards[index_cards][-2:]==trump_card[-2:]:  #если масть козырная
+                user_cards_trump=int(user_cards[index_cards][0:-2])-20 # номер карты расшифровывается в нормальный вид
+                similar_num.add(user_cards_trump)                      # и идет в сравнение
+                layer_down.append(user_cards[index_cards])             # а в layer_down идет обычная карта
+            else:                                              # если масть не козырная
+                similar_num.add(int(user_cards[index_cards][0:-2]))    # номер карты идет в сравнение
+                layer_down.append(user_cards[index_cards])             # а в layer_down идет обычная карта
+        if len(similar_num)>1:          #проверка! если в сравнении номера карт разные то все начинается заново и layer_down обнуляется
+            print('ебать ты шулер')
+            print()
+            layer_down.clear()
+            first_player_turn()
+            return
+        for num_cards in input_num_cards:     # замена всех выбранных карт в картах игрока на '0'
+            index_cards=num_cards-1
+            user_cards.insert(index_cards,'0')
+            user_cards.pop(index_cards+1)
+
+        user_cards_alt=[]
+        for card in user_cards:            #все остальное убирает '0' из карт игрока
+            if card!='0':
+                user_cards_alt.append(card)
+        user_cards=user_cards_alt
+
+def bot_defense_turn(): # реагирование бота на карты в layer_down и ответ на них. все карты идут в биту при отбивании
+    global bot_cards
+    global layer_down
+    global layer_up
+    global trump_card
+
+    for selected_card in layer_down:      #карты из layer_down берутся и каждая прогоняется через алгоритм
+        bot_cards=bot_defense_turn_utilite(selected_card,bot_cards) #обновление карт
+
+    if len(layer_up)<len(layer_down):              # проверка на то если бот не отбился полностью от атаки в layer_down
+        bot_cards.extend(layer_down)               # если не отбился то бот берет все карты из атаки (свои и чужие)
+        bot_cards.extend(layer_up)
+        layer_down.clear()
+        layer_up.clear()
+    elif len(layer_up)==len(layer_down):                                          # если отбился то все карты идут в биту
+        discard_layer_down.extend(layer_down)
+        discard_layer_up.extend(layer_up)
+        layer_down.clear()
+        layer_up.clear()
         
-layer_down=[]
+def bot_defense_turn_utilite(selected_card_layer_down,bot_cards):   #карты из layer_down берутся и каждая прогоняется через алгоритм
+    global layer_up
+    list_cards=[]
+    for card in bot_cards:                 #берет карту из карт бота
+        if selected_card_layer_down[-1]==card[-1] and int(selected_card_layer_down[0:-2])<int(card[0:-2]) or int(selected_card_layer_down[0:-2])<int(card[0:-2])-10 and selected_card_layer_down[0]!=card[0]:  #(если карта может побить другую карту): если [масть] выбранной карты из layer_down [равна] [масти] выбранной карты из карт бота [и] [число] выбранной карты [меньше] чем [число] из карт бота [или] если одна [карт]а [обычная] а вторая [карта] [козырная]
+            list_cards.append(card)                          #то помещает ее в отдельный список
+    random_index=randint(0,len(list_cards)-1)       #из списка берется рандомная карта
+    layer_up.append(list_cards[random_index])        # в layer_up добавляется выбранная карта
+    bot_cards.remove(list_cards[random_index])       # и из карт бота она убирается
+    return bot_cards                                 #обновление карт бота
+
+
+
+            
+        
+        
+        
+        
+
+
+layer_down=[]                         #заданые переменные
 layer_up=[]
 discard_layer_down=[]
 discard_layer_up=[]
@@ -217,38 +199,39 @@ cards_matrix=['1:Ч','2:Ч','3:Ч','4:Ч','5:Ч','6:Ч','7:Ч','8:Ч','9:Ч',
        '1:Б','2:Б','3:Б','4:Б','5:Б','6:Б','7:Б','8:Б','9:Б',
        '1:П','2:П','3:П','4:П','5:П','6:П','7:П','8:П','9:П',
        '1:К','2:К','3:К','4:К','5:К','6:К','7:К','8:К','9:К',]
+cards = []
 shuffle(cards_matrix)
 
-trump_card=cards_matrix[0] #+20
+trump_card=cards_matrix[0]       #задается козырь
 del cards_matrix[0]
 
-cards=check_trump_card(cards_matrix)
+for card in cards_matrix:          # перебор карт и изменение числа козырей на n+20
+    if card[-1] == trump_card[-1]:
+        num_card = int(card[0:-2]) + 20
+        cards.append(str(num_card) + card[-2:])
+    else:
+        cards.append(card)
 
-trump_c=int(trump_card[0:-2])+20
-trump_card=str(trump_c)+trump_card[-2:]
+trump_card=str(int(trump_card[0:-2])+20)+trump_card[-2:] # сам козырь тоже изменяется на n+20
 
-user_cards=cards[0:6]
+user_cards=cards[0:6]   # берется 6 начальных карт из колоды для игрока
 del cards[0:6]
-bot_cards=cards[0:6]
-del cards[0:6]
-bot_cards=['29:К','28:К','8:Ч','5:К','7:П','9:П']         #DELETE
-user_cards=['1:Ч','1:Б','1:П','2:П','21:К','22:К',] #DELETE
 
-while True:
-    print(cards)
-    tire()
+bot_cards=cards[0:6]    # берется 6 начальных карт из колоды для бота
+del cards[0:6]
+
+#bot_cards=['29:К','28:К','2:Ч','2:Б','27:К','26:К']         #DELETE
+#user_cards=['1:Ч','1:Б','1:П','2:П','21:К','22:К',]        #DELETE
+while True:                            #цикл ходов
     print_unknown_cards(bot_cards,'                 Карты противника:')
     print_cards(user_cards,'                 Твои карты:')
     print(f'Козырная карта - {trump_card}')
-    print(f'discard_layer_up: {discard_layer_up}')
-    print(f'discard_layer_down: {discard_layer_down}')
-    print('"стоп"-выключение игры')
-    print(f'user_cards: {user_cards}')
-    print(f'bot_cards: {bot_cards}')
+    print(f'discard_layer_up: {discard_layer_up}')          #DELETE
+    print(f'discard_layer_down: {discard_layer_down}')      #DELETE
+    print(f'layer_up: {layer_up}')                          #DELETE
+    print(f'layer_down: {layer_down}')                      #DELETE
+    print(f'user_cards: {user_cards}')                      #DELETE
+    print(f'bot_cards: {bot_cards}')                        #DELETE
     first_player_turn()
     bot_defense_turn()
     user_command=input('---')
-    if user_command.lower()=='стоп':
-        print('игра экстренно выключена')
-        sleep(1)
-        break
