@@ -1,10 +1,10 @@
 from random import *
 from time import *
-#функции для
 def first_player_turn():
     global layer_down
     global user_cards
-    print('выберите карты которыми хотите походить(номера карт через пробел)')
+    global trump_card
+    print('выберите карты которыми хотите походить(номера карт через пробел пример: "1 3 5")')
     user_text=input()
     if len(user_text)==1:
         index_=int(user_text)-1
@@ -15,8 +15,13 @@ def first_player_turn():
         n=set([])
         for i in indexes_:
             ui=i-1
-            n.add(user_cards[ui][0:-2])
-            layer_down.append(user_cards[ui])
+            if user_cards[ui][-2:]==trump_card[-2:]:
+                usr_crds=int(user_cards[ui][0:-2])-20
+                n.add(usr_crds)
+                layer_down.append(user_cards[ui])
+            else:
+                n.add(int(user_cards[ui][0:-2]))
+                layer_down.append(user_cards[ui])
         if len(n)>1:
             print('ебать ты шулер')
             print()
@@ -37,7 +42,10 @@ def bot_defense_turn():
     global bot_cards
     global layer_down
     global layer_up
+    global trump_card
     ld=len(layer_down)
+
+
     for i in layer_down:
         bot_cards=bot_defense_turn_utilite(i,bot_cards)
 
@@ -47,15 +55,14 @@ def bot_defense_turn():
         layer_down.clear()
         layer_up.clear()
     else:
-        discard_layer_down=layer_down
+        discard_layer_down.extend(layer_down)
         layer_down.clear()
-        discard_layer_up=layer_up
+        discard_layer_up.extend(layer_up)
         layer_up.clear()
         
 def bot_defense_turn_utilite(i,bot_cards):
     global layer_down
     global layer_up
-    #print('bot_defense_turn_utilite')
     #print(f'layer_down: {layer_down}')
     #print(f'bot_cards: {bot_cards}')
     #print()
@@ -78,7 +85,17 @@ def bot_defense_turn_utilite(i,bot_cards):
     
     
     
-    
+def check_trump_card(card):
+    global trump_card
+    cards=[]
+    for y in card:
+        if y[-1]==trump_card[-1]:
+            tr=int(y[0:-2])+20
+            cards.append(str(tr)+y[-2:])
+        else:
+            cards.append(y)
+    return cards
+            
 def print_cards(cards,text):
     global trump_card
     print(text)
@@ -205,19 +222,17 @@ shuffle(cards_matrix)
 trump_card=cards_matrix[0] #+20
 del cards_matrix[0]
 
-cards=[]
-for y in cards_matrix:
-    if y[-1]==trump_card[-1]:
-        tr=int(y[0:-2])+20
-        cards.append(str(tr)+y[-2:])
-    cards.append(y)
-    
+cards=check_trump_card(cards_matrix)
+
+trump_c=int(trump_card[0:-2])+20
+trump_card=str(trump_c)+trump_card[-2:]
+
 user_cards=cards[0:6]
 del cards[0:6]
 bot_cards=cards[0:6]
 del cards[0:6]
-#bot_cards=['6:П','2:Б','8:Ч','5:К','7:П','9:П'] #DELETE
-user_cards=['24:Ч','25:Б','21:П','28:К','28:Ч','28:К',] #DELETE
+bot_cards=['29:К','28:К','8:Ч','5:К','7:П','9:П']         #DELETE
+user_cards=['1:Ч','1:Б','1:П','2:П','21:К','22:К',] #DELETE
 
 while True:
     print(cards)
@@ -225,7 +240,11 @@ while True:
     print_unknown_cards(bot_cards,'                 Карты противника:')
     print_cards(user_cards,'                 Твои карты:')
     print(f'Козырная карта - {trump_card}')
+    print(f'discard_layer_up: {discard_layer_up}')
+    print(f'discard_layer_down: {discard_layer_down}')
     print('"стоп"-выключение игры')
+    print(f'user_cards: {user_cards}')
+    print(f'bot_cards: {bot_cards}')
     first_player_turn()
     bot_defense_turn()
     user_command=input('---')
