@@ -111,8 +111,10 @@ def print_unknown_cards(cards,text):
     print(f'                 У противника {len(cards)} карт')
     print()
 def print_all_card_tab(bot_cards,text,user_cards,text1):
+    global trump_card
     print_unknown_cards(bot_cards,text)
     print_cards(user_cards,text1)
+    print(f'Козырная карта - {trump_card}')
 #####################################################################################################################################################################################
 
 def first_player_turn():     #первый ход игрока в цикле(помещение выбранных карт в layer_down и их удаление в прошлом хранилище)
@@ -258,18 +260,17 @@ del cards[0:6]
 bot_cards=cards[0:6]    # берется 6 начальных карт из колоды для бота
 del cards[0:6]
 
-bot_cards=['2:Ч','2:Б','2:П','22:К','23:К',]          #ЭТА НАДА УДАЛИТЬ
-user_cards=['1:Ч','1:Б','1:П','21:К']        #ЭТА НАДА УДАЛИТЬ
+#bot_cards=['2:Ч','2:Б','2:П','22:К','23:К',]          #ЭТА НАДА УДАЛИТЬ
+#user_cards=['1:Ч','1:Б','1:П','21:К']        #ЭТА НАДА УДАЛИТЬ
 
 while True:                            #цикл ходов
     print_all_card_tab(bot_cards,'                 Карты противника:',user_cards,'                 Твои карты:')
-    print(f'Козырная карта - {trump_card}')
-    print(f'discard_layer_up: {discard_layer_up}')          #ЭТА НАДА УДАЛИТЬ
-    print(f'discard_layer_down: {discard_layer_down}')      #ЭТА НАДА УДАЛИТЬ
-    print(f'layer_up: {layer_up}')                          #ЭТА НАДА УДАЛИТЬ
-    print(f'layer_down: {layer_down}')                      #ЭТА НАДА УДАЛИТЬ
-    print(f'user_cards: {user_cards}')                      #ЭТА НАДА УДАЛИТЬ
-    print(f'bot_cards: {bot_cards}')                        #ЭТА НАДА УДАЛИТЬ
+    #print(f'discard_layer_up: {discard_layer_up}')          #ЭТА НАДА УДАЛИТЬ
+    #print(f'discard_layer_down: {discard_layer_down}')      #ЭТА НАДА УДАЛИТЬ
+    #print(f'layer_up: {layer_up}')                          #ЭТА НАДА УДАЛИТЬ
+    #print(f'layer_down: {layer_down}')                      #ЭТА НАДА УДАЛИТЬ
+    #print(f'user_cards: {user_cards}')                      #ЭТА НАДА УДАЛИТЬ
+    #print(f'bot_cards: {bot_cards}')                        #ЭТА НАДА УДАЛИТЬ
     first_player_turn()
     bot_defense_turn()
     print_all_card_tab(bot_cards,'                 Карты противника:',user_cards,'                 Твои карты:')
