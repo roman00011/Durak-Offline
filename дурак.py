@@ -313,8 +313,8 @@ del cards[0:6]
 bot_cards=cards[0:6]    # берется 6 начальных карт из колоды для бота
 del cards[0:6]
 
-bot_cards=['2:Ч','2:Б','2:П','22:К','23:К',]          #ЭТА НАДА УДАЛИТЬ
-user_cards=['1:Ч','1:Б','1:П','21:К']                 #ЭТА НАДА УДАЛИТЬ
+#bot_cards=['2:Ч','2:Б','2:П','22:К','23:К',]          #ЭТА НАДА УДАЛИТЬ
+#user_cards=['1:Ч','1:Б','1:П','21:К']                 #ЭТА НАДА УДАЛИТЬ
 
 while True:                            #цикл ходов
     print_all_card_tab(bot_cards,'                 Карты противника:',user_cards,'                 Твои карты:',layer_down,discard_layer_up,discard_layer_down)
