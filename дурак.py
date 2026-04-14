@@ -110,6 +110,9 @@ def print_unknown_cards(cards,text):
     print(unification(p0))
     print(f'                 У противника {len(cards)} карт')
     print()
+def print_all_card_tab(bot_cards,text,user_cards,text1):
+    print_unknown_cards(bot_cards,text)
+    print_cards(user_cards,text1)
 #####################################################################################################################################################################################
 
 def first_player_turn():     #первый ход игрока в цикле(помещение выбранных карт в layer_down и их удаление в прошлом хранилище)
@@ -156,7 +159,7 @@ def bot_defense_turn(): # реагирование бота на карты в l
     global layer_down
     global layer_up
     global trump_card
-
+    layer_down.sort(key=lambda x:x[0:-2])
     for selected_card in layer_down:      #карты из layer_down берутся и каждая прогоняется через алгоритм
         bot_cards=bot_defense_turn_utilite(selected_card,bot_cards) #обновление карт
 
@@ -165,7 +168,7 @@ def bot_defense_turn(): # реагирование бота на карты в l
         bot_cards.extend(layer_up)
         layer_down.clear()
         layer_up.clear()
-    elif len(layer_up)==len(layer_down):                                          # если отбился то все карты идут в биту
+    elif len(layer_up)==len(layer_down):                                          # если отбился то все карты идут специальный слой для отбития
         discard_layer_down.extend(layer_down)
         discard_layer_up.extend(layer_up)
         layer_down.clear()
@@ -175,16 +178,51 @@ def bot_defense_turn_utilite(selected_card_layer_down,bot_cards):   #карты 
     global layer_up
     list_cards=[]
     for card in bot_cards:                 #берет карту из карт бота
-        if selected_card_layer_down[-1]==card[-1] and int(selected_card_layer_down[0:-2])<int(card[0:-2]) or int(selected_card_layer_down[0:-2])<int(card[0:-2])-10 and selected_card_layer_down[0]!=card[0]:  #(если карта может побить другую карту): если [масть] выбранной карты из layer_down [равна] [масти] выбранной карты из карт бота [и] [число] выбранной карты [меньше] чем [число] из карт бота [или] если одна [карт]а [обычная] а вторая [карта] [козырная]
+        if selected_card_layer_down[-1]==card[-1] and int(selected_card_layer_down[0:-2])<int(card[0:-2]) or int(selected_card_layer_down[0:-2])<int(card[0:-2])-10 and selected_card_layer_down[0]!=card[0]:  #(если карта бота может победить карту игрока): если [масть] выбранной карты из layer_down [равна] [масти] выбранной карты из карт бота [и] [число] выбранной карты [меньше] чем [число] из карт бота [или] если одна [карт]а [обычная] а вторая [карта] [козырная]
             list_cards.append(card)                          #то помещает ее в отдельный список
-    random_index=randint(0,len(list_cards)-1)       #из списка берется рандомная карта
-    layer_up.append(list_cards[random_index])        # в layer_up добавляется выбранная карта
-    bot_cards.remove(list_cards[random_index])       # и из карт бота она убирается
+    if len(list_cards)==0:
+        return bot_cards
+    if randint(0,2)>=1:
+        list_cards.sort(key=lambda x:x[0:-2])             #обычный алгоритм: самая маленькая карта бьет другую самую маленькую карту
+        layer_up.append(list_cards[0])
+        bot_cards.remove(list_cards[0])
+    else:
+        random_index=randint(0,len(list_cards)-1)         #алгоритм рандома: из списка берется рандомная карта
+        layer_up.append(list_cards[random_index])                        # в layer_up добавляется выбранная карта
+        bot_cards.remove(list_cards[random_index])                       # и из карт бота она убирается
+
     return bot_cards                                 #обновление карт бота
 
+def cycle_user_attack_check(discard_layer_up,discard_layer_down,user_cards):
+    user_cards_sorting=[card[0:-2] for card in user_cards]
+    user_cards_sorting_with_trump_card=[]
+    discard_layer_duo=[]
+    discard_layer_duo_sorting=[]
+    discard_layer_duo_sorting_with_trump_card=[]
+    discard_layer_duo.extend(discard_layer_down)
+    discard_layer_duo.extend(discard_layer_up)
+    discard_layer_duo_sorting = [card[0:-2] for card in discard_layer_duo]
+    for card in user_cards_sorting:          #user_cards_sorting.sort(key=lambda x:int(x)-20 if int(x)>20 else int(x))
+        if int(card)<20:
+            user_cards_sorting_with_trump_card.append(card)
+        else:
+            user_cards_sorting_with_trump_card.append(str(int(card)-20))
+    for card in discard_layer_duo_sorting:
+        if int(card)<20:
+            discard_layer_duo_sorting_with_trump_card.append(card)
+        else:
+            discard_layer_duo_sorting_with_trump_card.append(str(int(card)-20))
+    variable=0
+    for value in discard_layer_duo_sorting_with_trump_card:
+        if value in user_cards_sorting_with_trump_card:
+            variable+=1
+    if variable>=1:
+        return True
+    else:
+        return False
 
 
-            
+
         
         
         
@@ -220,18 +258,36 @@ del cards[0:6]
 bot_cards=cards[0:6]    # берется 6 начальных карт из колоды для бота
 del cards[0:6]
 
-#bot_cards=['29:К','28:К','2:Ч','2:Б','27:К','26:К']         #DELETE
-#user_cards=['1:Ч','1:Б','1:П','2:П','21:К','22:К',]        #DELETE
+bot_cards=['2:Ч','2:Б','2:П','22:К','23:К',]          #ЭТА НАДА УДАЛИТЬ
+user_cards=['1:Ч','1:Б','1:П','21:К']        #ЭТА НАДА УДАЛИТЬ
+
 while True:                            #цикл ходов
-    print_unknown_cards(bot_cards,'                 Карты противника:')
-    print_cards(user_cards,'                 Твои карты:')
+    print_all_card_tab(bot_cards,'                 Карты противника:',user_cards,'                 Твои карты:')
     print(f'Козырная карта - {trump_card}')
-    print(f'discard_layer_up: {discard_layer_up}')          #DELETE
-    print(f'discard_layer_down: {discard_layer_down}')      #DELETE
-    print(f'layer_up: {layer_up}')                          #DELETE
-    print(f'layer_down: {layer_down}')                      #DELETE
-    print(f'user_cards: {user_cards}')                      #DELETE
-    print(f'bot_cards: {bot_cards}')                        #DELETE
+    print(f'discard_layer_up: {discard_layer_up}')          #ЭТА НАДА УДАЛИТЬ
+    print(f'discard_layer_down: {discard_layer_down}')      #ЭТА НАДА УДАЛИТЬ
+    print(f'layer_up: {layer_up}')                          #ЭТА НАДА УДАЛИТЬ
+    print(f'layer_down: {layer_down}')                      #ЭТА НАДА УДАЛИТЬ
+    print(f'user_cards: {user_cards}')                      #ЭТА НАДА УДАЛИТЬ
+    print(f'bot_cards: {bot_cards}')                        #ЭТА НАДА УДАЛИТЬ
     first_player_turn()
     bot_defense_turn()
-    user_command=input('---')
+    print_all_card_tab(bot_cards,'                 Карты противника:',user_cards,'                 Твои карты:')
+    user_can_attack=cycle_user_attack_check(discard_layer_up,discard_layer_down,user_cards)
+    if user_can_attack:
+        print('Ты можешь подкинуть карту, будешь делать?(да или нет)')
+        user_command = input('---')
+        if user_command.lower() == 'нет':
+            user_can_attack = False
+    while user_can_attack:
+        print_all_card_tab(bot_cards,'                 Карты противника:',user_cards,'                 Твои карты:')
+        first_player_turn()
+        bot_defense_turn()
+        print_all_card_tab(bot_cards,'                 Карты противника:',user_cards,'                 Твои карты:')
+        user_can_attack=cycle_user_attack_check(discard_layer_up, discard_layer_down, user_cards)
+        if user_can_attack:
+            print('Ты можешь подкинуть карту, будешь делать?(да или нет)')
+            user_command=input('---')
+            if user_command.lower()=='нет':
+                user_can_attack=False
+    user_command=input('цикл атаки игрока окончен')
