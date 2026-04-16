@@ -362,7 +362,7 @@ shuffle(cards_matrix)
 trump_card=cards_matrix[0]       #задается козырь
 del cards_matrix[0]
 
-trump_card='6:К'                                        #ЭТА НАДА УДАЛИТЬ
+#trump_card='6:К'                                        #ЭТА НАДА УДАЛИТЬ
 
 for card in cards_matrix:          # перебор карт и изменение числа козырей на n+20
     if card[-1] == trump_card[-1]:
@@ -379,8 +379,8 @@ del cards[0:6]
 bot_cards=cards[0:6]    # берется 6 начальных карт из колоды для бота
 del cards[0:6]
 
-bot_cards=['23:К','23:К','23:К']                           #ЭТА НАДА УДАЛИТЬ
-user_cards=['1:Ч','1:Б','2:Ч','22:К','3:П']                 #ЭТА НАДА УДАЛИТЬ
+#bot_cards=['23:К','23:К','22:К']                           #ЭТА НАДА УДАЛИТЬ
+#user_cards=['1:П','1:Ч','1:Б','2:Ч','22:К','3:П']                 #ЭТА НАДА УДАЛИТЬ
 #layer_up=[]                                                  #ЭТА НАДА УДАЛИТЬ
 #layer_down=[]                                               #ЭТА НАДА УДАЛИТЬ
 #discard_layer_down=[]                                        #ЭТА НАДА УДАЛИТЬ
