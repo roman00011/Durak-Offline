@@ -318,16 +318,88 @@ def bot_defense_turn_utilite(selected_card_layer_down,bot_cards):   #карты 
 
     return bot_cards                                 #обновление карт бота
 
-def first_bot_turn():        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!сделать проверку на карты в discard
+def first_bot_turn():
+    print('Бот ходит')
+    print('Бот думает')
+    sleep(1.5)
     global bot_cards
     global discard_layer_down
     global discard_layer_up
+    global layer_down
     discard_layer_duo=[]
     discard_layer_duo.extend(discard_layer_up)
     discard_layer_duo.extend(discard_layer_down)
-    if len(discard_layer_duo)>0:
-        #бот определяет какой картой ему ходить
-        
+    if len(discard_layer_duo)==0:  #если в discard нету карт
+        card=bot_cards[randint(0,len(bot_cards)-1)]
+        bot_cards.remove(card)
+        more_1=[]
+        for bot_card in bot_cards:
+            if int(bot_card[0:-2])>20:
+                bot_card_trump = str(int(bot_card[0:-2])-20)+bot_card[-2:]
+            else:
+                bot_card_trump = bot_card
+            if int(card[0:-2]) > 20:
+                card_trump = str(int(card[0:-2]) - 20) + card[-2:]
+            else:
+                card_trump=card
+
+            if card_trump[0] == bot_card_trump[0]:
+                more_1.append(bot_card)
+                bot_cards.remove(bot_card)
+                continue
+        if len(more_1) >= 1:
+            if randint(1,4)==4:
+                more_1.append(card)
+                layer_down.extend(more_1)
+            else:
+                layer_down.append(card)
+        else:
+            layer_down.append(card)
+    else:                                                 #если в discard есть карты
+        discard_layer_duo_with_trump_card=[]
+        for card in discard_layer_duo:                   #перевод козырных карт discard
+            if int(card[0:-2]) < 20:
+                discard_layer_duo_with_trump_card.append(card)
+            else:
+                discard_layer_duo_with_trump_card.append(str(int(card[0:-2]) - 20)+card[-2:])
+        bot_cards_can_attack=set([])
+        for discard_card in discard_layer_duo_with_trump_card:
+            for bot_card in bot_cards:
+                if int(bot_card[0:-2]) > 20:
+                    bot_card_trump = str(int(bot_card[0:-2]) - 20) + bot_card[-2:]
+                else:
+                    bot_card_trump = bot_card
+
+                if discard_card[0:-2]==bot_card_trump[0:-2]:
+                    bot_cards_can_attack.add(bot_card)
+        if len(bot_cards_can_attack)==0:
+            print('ты отбился')
+        else:
+            bot_attack=[]
+            bot_cards_can_attack_list=list(bot_cards_can_attack)
+            shuffle(bot_cards_can_attack_list)
+            bot_cards_can_attack_list_trump=[]
+
+            for card in bot_cards_can_attack_list:  # перевод козырных карт discard
+                if int(card[0:-2]) < 20:
+                    bot_cards_can_attack_list_trump.append(card)
+                else:
+                    bot_cards_can_attack_list_trump.append(str(int(card[0:-2]) - 20) + card[-2:])
+
+            for card in bot_cards_can_attack_list[1:]:
+                if int(card[0:-2])>20:
+                    card_tramp=str(int(card[0:-2])-20)+card[-2:]
+                else:
+                    card_tramp=card
+
+                if card_tramp[0:-2]==bot_cards_can_attack_list_trump[0][0:-2]:
+                    bot_attack.append(card)
+                    bot_cards.remove(card)
+            bot_attack.append(bot_cards_can_attack_list[0])
+            bot_cards.remove(bot_cards_can_attack_list[0])
+            layer_down.extend(bot_attack)
+
+
 
 
 
@@ -395,13 +467,19 @@ del cards[0:6]
 bot_cards=cards[0:6]    # берется 6 начальных карт из колоды для бота
 del cards[0:6]
 
-#bot_cards=['23:К','23:К','22:К']                                                                    #ЭТА НАДА УДАЛИТЬ
+#bot_cards=['23:К','23:П','23:Ч','3:Б','2:Б']                                                                    #ЭТА НАДА УДАЛИТЬ
 #user_cards=['1:П','1:Ч','1:Б','2:Ч','22:К','3:П']                                                    #ЭТА НАДА УДАЛИТЬ
 #layer_up=[]                                                                                     #ЭТА НАДА УДАЛИТЬ
 #layer_down=[]                                                                                  #ЭТА НАДА УДАЛИТЬ
-#discard_layer_down=[]                                                                              #ЭТА НАДА УДАЛИТЬ
-#discard_layer_up=[]                                                                                 #ЭТА НАДА УДАЛИТЬ
-
+#discard_layer_down=['23:К']                                                                              #ЭТА НАДА УДАЛИТЬ
+#discard_layer_up=['1:Ч']                                                                                 #ЭТА НАДА УДАЛИТЬ
+#print_all_card_tab(bot_cards, '                 Карты противника:', user_cards, '                 Твои карты:',layer_down, discard_layer_up, discard_layer_down)
+#first_bot_turn()
+#print_all_card_tab(bot_cards, '                 Карты противника:', user_cards, '                 Твои карты:',layer_down, discard_layer_up, discard_layer_down)
+#print(bot_cards)
+#print(layer_down)
+#print()
+#user_command=input('ещкере')
 while True:                            #цикл ходов
     bot_cards_len_before=len(bot_cards)
     print('Ход игрока')
@@ -449,6 +527,11 @@ while True:                            #цикл ходов
             user_command=input('---')
             if user_command.lower()=='нет':
                 user_can_attack=False
+    discard_layer_down.clear()
+    discard_layer_up.clear()
     while True:
         print()
-        user_command=input('цикл атаки игрока окончен')            #     игрок и бот берут карты с колоды(сначала ходивший)
+                    #     игрок и бот берут карты с колоды(сначала ходивший)                             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! доделлать !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        print_all_card_tab(bot_cards, '                 Карты противника:', user_cards, '                 Твои карты:',layer_down, discard_layer_up, discard_layer_down)
+        first_bot_turn()
+        print_all_card_tab(bot_cards, '                 Карты противника:', user_cards, '                 Твои карты:',layer_down, discard_layer_up, discard_layer_down)
