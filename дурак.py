@@ -126,7 +126,7 @@ def print_all_card_tab(bot_cards,text,user_cards,text1,layer_down,discard_layer_
     print_unknown_cards(bot_cards,text)
     print_battle_cards(layer_down, discard_layer_up, discard_layer_down)
     print_cards(user_cards,text1)
-    print(f'Козырная карта - {trump_card}')
+    print(f'Козырная карта - {trump_card} , Карт в колоде - {len(cards)}')
 
 
 def print_battle_cards(layer_down_cards,discard_up_cards,discard_down_cards):
@@ -253,8 +253,6 @@ def first_player_turn():     #первый ход игрока в цикле(п�
         for card in user_card_sorted:
             if card in discard_layer_duo_sorting_with_trump_card and len(discard_layer_duo)>0:
                 variable+=1
-
-
 
         similar_num=set([])
         if len(discard_layer_duo)==0 or variable==0:        #надо делать если discard равен нулю или если
@@ -494,6 +492,49 @@ def cycle_attack_check(discard_layer_up,discard_layer_down,user_card):    #ес�
     else:
         return False
 
+
+def giveaway(turn):
+    global cards
+    global trump_card
+    global bot_cards
+    global user_cards
+    global trump_car_allowed
+    if len(cards)==0 and trump_car_allowed==True:
+        trump_car_allowed = False
+        cards.append(trump_card)
+    what_need_user_card=6-len(user_cards)
+    what_need_bot_card=6-len(bot_cards)
+    if what_need_user_card<0:
+        what_need_user_card=0
+    if what_need_bot_card<0:
+        what_need_bot_card=0
+    if turn=='бот':
+        bot_cards.extend(cards[0:what_need_bot_card])
+        del cards[0:what_need_bot_card]
+        user_cards.extend(cards[0:what_need_user_card])
+        del cards[0:what_need_user_card]
+    elif turn=='игрок':
+        user_cards.extend(cards[0:what_need_user_card])
+        del cards[0:what_need_user_card]
+        bot_cards.extend(cards[0:what_need_bot_card])
+        del cards[0:what_need_bot_card]
+    sleep(2)
+    print_all_card_tab(bot_cards, '                 Карты противника:', user_cards, '                 Твои карты:',layer_down, discard_layer_up, discard_layer_down)
+    if len(cards)!=0:
+        print('роздача карт')
+    sleep(2)
+
+
+def win():
+    if len(cards)==0:
+        if len(bot_cards)==0 and len(user_cards)!=0:
+            print('бот выйграл')
+            return True
+        elif len(bot_cards)!=0 and len(user_cards)==0:
+            print('ТЫ ВВВЫЙГРАЛ!!!')
+            return True
+
+
 layer_up=[]
 layer_down=[]
 discard_layer_down=[]
@@ -505,6 +546,7 @@ cards_matrix=['1:Ч','2:Ч','3:Ч','4:Ч','5:Ч','6:Ч','7:Ч','8:Ч','9:Ч',
 cards = []
 shuffle(cards_matrix)
 
+trump_car_allowed=True
 trump_card=cards_matrix[0]       #задается козырь
 del cards_matrix[0]
 
@@ -531,19 +573,17 @@ del cards[0:6]
 #layer_down=[]                                                                                  #ЭТА НАДА УДАЛИТЬ
 #discard_layer_down=['23:К']                                                                              #ЭТА НАДА УДАЛИТЬ
 #discard_layer_up=['1:Ч']                                                                                 #ЭТА НАДА УДАЛИТЬ
-#print_all_card_tab(bot_cards, '                 Карты противника:', user_cards, '                 Твои карты:',layer_down, discard_layer_up, discard_layer_down)
-#first_bot_turn()
-#print_all_card_tab(bot_cards, '                 Карты противника:', user_cards, '                 Твои карты:',layer_down, discard_layer_up, discard_layer_down)
-#print(bot_cards)
-#print(layer_down)
-#print()
-#user_command=input('ещкере')
+
 while True:                            #цикл ходов
+    if win()==True:
+        break
     bot_cards_len_before=len(bot_cards)
     print('Ход игрока')
     print_all_card_tab(bot_cards,'                 Карты противника:',user_cards,'                 Твои карты:',layer_down,discard_layer_up,discard_layer_down)
     first_player_turn()
     print('Ход игрока')
+    if win()==True:
+        break
     print_all_card_tab(bot_cards, '                 Карты противника:', user_cards, '                 Твои карты:',layer_down, discard_layer_up, discard_layer_down)
     bot_defense_turn()
     print('Ход игрока')
@@ -551,8 +591,11 @@ while True:                            #цикл ходов
     bot_cards_len_after = len(bot_cards)
     if bot_cards_len_before>bot_cards_len_after:
         user_can_attack=cycle_attack_check(discard_layer_up,discard_layer_down,user_cards)
+    elif len(user_cards)==0:
+        user_can_attack = False
     else:
         user_can_attack=True
+        giveaway('игрок')
     if user_can_attack and bot_cards_len_before < bot_cards_len_after:
         print('Ты можешь сделать ход еще раз ')
         sleep(1.75)
@@ -561,13 +604,18 @@ while True:                            #цикл ходов
         user_command = input('--- ')
         if user_command.lower() == 'нет':
             user_can_attack = False
-
+    if win()==True:
+        break
     while user_can_attack:
+        if win() == True:
+            break
         bot_cards_len_before = len(bot_cards)
         print('Ход игрока')
         print_all_card_tab(bot_cards,'                 Карты противника:',user_cards,'                 Твои карты:',layer_down,discard_layer_up,discard_layer_down)
         first_player_turn()
         print('Ход игрока')
+        if win() == True:
+            break
         print_all_card_tab(bot_cards, '                 Карты противника:', user_cards, '                 Твои карты:',layer_down, discard_layer_up, discard_layer_down)
         bot_defense_turn()
         print('Ход игрока')
@@ -575,8 +623,12 @@ while True:                            #цикл ходов
         bot_cards_len_after = len(bot_cards)
         if bot_cards_len_before > bot_cards_len_after:
             user_can_attack = cycle_attack_check(discard_layer_up, discard_layer_down, user_cards)
+
+        elif len(user_cards) == 0:
+            user_can_attack = False
         else:
             user_can_attack = True
+            giveaway('игрок')
         if user_can_attack and bot_cards_len_before<bot_cards_len_after:
             print('Ты можешь сделать ход еще раз ')
         #                                                                            игрок берет карты с колоды(ходивший)
@@ -585,19 +637,60 @@ while True:                            #цикл ходов
             user_command=input('--- ')
             if user_command.lower()=='нет':
                 user_can_attack=False
-    sleep(1.75)
     discard_layer_down.clear()
     discard_layer_up.clear()
-    #while True:
-                    #     игрок и бот берут карты с колоды(сначала ходивший)                             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! доделлать !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    if win()==True:
+        break
+    giveaway('игрок')
+    user_cards_len_before = len(user_cards)
     print('Ход бота')
     print_all_card_tab(bot_cards, '                 Карты противника:', user_cards, '                 Твои карты:',layer_down, discard_layer_up, discard_layer_down)
     first_bot_turn()
     print('Ход бота')
+    if win()==True:
+        break
     print_all_card_tab(bot_cards, '                 Карты противника:', user_cards, '                 Твои карты:',layer_down, discard_layer_up, discard_layer_down)
     player_defense_turn()
     print('Ход бота')
     print_all_card_tab(bot_cards, '                 Карты противника:', user_cards, '                 Твои карты:',layer_down, discard_layer_up, discard_layer_down)
+    user_cards_len_after = len(user_cards)
+    if user_cards_len_before>user_cards_len_after:
+        bot_can_attack=cycle_attack_check(discard_layer_up,discard_layer_down,bot_cards)
 
-    print('XD')
-    sleep(5)
+    elif len(bot_cards)==0:
+        bot_can_attack = False
+    else:
+        bot_can_attack=True
+        giveaway('бот')
+    if win()==True:
+        break
+    while bot_can_attack:
+        if win() == True:
+            break
+        user_cards_len_before = len(user_cards)
+        print('Ход бота')
+        print_all_card_tab(bot_cards, '                 Карты противника:', user_cards, '                 Твои карты:',layer_down, discard_layer_up, discard_layer_down)
+        first_bot_turn()
+        print('Ход бота')
+        if win() == True:
+            break
+        print_all_card_tab(bot_cards, '                 Карты противника:', user_cards, '                 Твои карты:',layer_down, discard_layer_up, discard_layer_down)
+        player_defense_turn()
+        print('Ход бота')
+        print_all_card_tab(bot_cards, '                 Карты противника:', user_cards, '                 Твои карты:',layer_down, discard_layer_up, discard_layer_down)
+        user_cards_len_after = len(user_cards)
+        if user_cards_len_before > user_cards_len_after:
+            bot_can_attack = cycle_attack_check(discard_layer_up, discard_layer_down, bot_cards)
+
+        elif len(bot_cards) == 0:
+            bot_can_attack = False
+        else:
+            bot_can_attack = True
+            giveaway('бот')
+    if win()==True:
+        break
+    discard_layer_down.clear()
+    discard_layer_up.clear()
+    if win()==True:
+        break
+    giveaway('бот')
