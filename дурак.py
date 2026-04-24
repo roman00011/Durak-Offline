@@ -208,9 +208,9 @@ def print_battle_cards(layer_down_cards,discard_up_cards,discard_down_cards):
         i1 = ['                    ']
         i2 = ['   ________________ ']
         i3 = ['  /Кол-во карт-L /|']
-        i4_1 = [' /_______________//|']
-        i5_1 = [' |===============|/|']
-        i6_1 = [' |===============|/|']
+        i4_1=[' /_______________//|']
+        i5_1=[' |===============|/|']
+        i6_1=[' |===============|/|']
         i7 = [' |===============|/ ']
         i8 = ['    /      s  /    ']
         i9 = ['   /      v /      ']
@@ -222,10 +222,10 @@ def print_battle_cards(layer_down_cards,discard_up_cards,discard_down_cards):
     if len(cards) <= 15 and len(cards) > 10:
         i1 = ['                   ']
         i2 = ['                   ']
-        i3_1 = ['  ________________ ']
+        i3_1=['  ________________ ']
         i4 = [' /Кол-во карт- L /|']
-        i5_1 = ['/_______________//|']
-        i6_1 = ['|===============|/|']
+        i5_1=['/_______________//|']
+        i6_1=['|===============|/|']
         i7 = ['|===============|/ ']
         i8 = ['   /       s  /    ']
         i9 = ['  /       v /      ']
@@ -282,105 +282,87 @@ def print_battle_cards(layer_down_cards,discard_up_cards,discard_down_cards):
 def first_player_turn():     #первый ход игрока в цикле(помещение выбранных карт в layer_down и их удаление в прошлом хранилище)
     global layer_down
     global user_cards
-    global discard_layer_up
-    global discard_layer_down
+    global user_can_attack
     discard_layer_duo = []
     discard_layer_duo.extend(discard_layer_up)
-    discard_layer_duo.extend(discard_layer_down)
-    print('выберите карты которыми хотите походить(номера карт через пробел пример: "1 3 5")')      #игрок может поставить те карты, значение которых есть в discard_layer_down и discard_layer_up
-    user_text=input('--- ')       #номер карты
-    if len(user_text)==1:   #ход одной картой
-        index_=int(user_text)-1
-        discard_layer_duo=[]
-        discard_layer_duo_sorting_with_trump_card=[]
-        discard_layer_duo.extend(discard_layer_up)
-        discard_layer_duo.extend(discard_layer_down)
-        discard_layer_duo_sorting = [card[0:-2] for card in discard_layer_duo]
-        user_card = []
-        if int(user_cards[index_][0:-2])>20:                     #перевод козырных карт
-            user_card.append(str(int(user_cards[index_][0:-2])-20))
-        else:
-            user_card.append(str(int(user_cards[index_][0:-2])))
-
-        for card in discard_layer_duo_sorting:                   #перевод козырных карт
-            if int(card) < 20:
-                discard_layer_duo_sorting_with_trump_card.append(card)
+    discard_layer_duo.extend(discard_layer_down)           # СДЕЛАТЬ МЕНЮ ВЫБОРА  1-сделать чото 2-сделать чото другое
+    player_attack_turn_check = True
+    while player_attack_turn_check:
+        print_all_card_tab(bot_cards,'Карты противника:',user_cards,'Твои карты:',layer_down,discard_layer_up,discard_layer_down)
+        print('ты ходишь')
+        print('шо ты хочешь сделать:')
+        print('1-положить карту, 2-завершить ход, 3-пас, 4-забрать карту')
+        user_text_general=input('--- ')       #номер карты
+        if user_text_general == '1':
+            if len(layer_down)==len(bot_cards):
+                print('слишком много карт')
+                sleep(1.75)
+                continue
+            print_all_card_tab(bot_cards,'Карты противника:',user_cards,'Твои карты:',layer_down,discard_layer_up,discard_layer_down)
+            print('выбери номер карты, которую хочешь положить')
+            user_card_index=int(input('--- '))-1
+            if user_card_index+1>len(user_cards) or user_card_index<0:
+                print('ошибка')
+                sleep(1.75)
+                continue
+            selected_user_card=user_cards[user_card_index]
+            if len(layer_down)==0:
+                layer_down.append(selected_user_card)
+                user_cards.remove(selected_user_card)          ###### ERROR
+            elif len(layer_down)>0 :
+                card_equally=True
+                layer_down_and_discard=[]
+                layer_down_and_discard.extend(layer_down)
+                layer_down_and_discard.extend(discard_layer_duo)
+                if int(selected_user_card[0:-2])>20:
+                    selected_user_card_trump=str(int(selected_user_card[0:-2])-20)+selected_user_card[-2:]
+                else:
+                    selected_user_card_trump=selected_user_card
+                for card in layer_down_and_discard:
+                    if int(card[0:-2])>20:
+                        card=str(int(card[0:-2])-20)+card[-2:]
+                    if selected_user_card_trump[0:-2]!=card[0:-2]:
+                        card_equally=False
+                if card_equally==False:
+                    print('ошибка')
+                    sleep(2)
+                    continue
+                layer_down.append(selected_user_card)
+                user_cards.remove(selected_user_card)
+        elif user_text_general == '2':
+            if len(layer_down)>0:
+                player_attack_turn_check = False
             else:
-                discard_layer_duo_sorting_with_trump_card.append(str(int(card) - 20))
-
-        if user_card[0] not in discard_layer_duo_sorting_with_trump_card and len(discard_layer_duo)>0: # если значения карты нету в discard и если в discard есть карты
-            print('ошибка')
-            print()
-            first_player_turn()
-            return
-        layer_down.append(user_cards[index_])
-        user_cards.pop(index_)
-    else:                   #ход несколькими картами
-        input_num_cards=list(map(int,user_text.split(' ')))
-        discard_layer_duo = []
-        discard_layer_duo_sorting_with_trump_card = []
-        user_card = []
-        user_card_sorted=[]
-        discard_layer_duo.extend(discard_layer_up)
-        discard_layer_duo.extend(discard_layer_down)
-        discard_layer_duo_sorting = [card[0:-2] for card in discard_layer_duo]
-        for card in discard_layer_duo_sorting:                   #перевод козырных карт
-            if int(card) < 20:
-                discard_layer_duo_sorting_with_trump_card.append(card)
+                print('ошибка')
+                sleep(1.75)
+        elif user_text_general == '3':
+            if len(discard_layer_duo)>0 and len(layer_down)==0:
+                player_attack_turn_check = False
+                discard_layer_down.clear()
+                discard_layer_up.clear()
+                user_can_attack=False
             else:
-                discard_layer_duo_sorting_with_trump_card.append(str(int(card) - 20))
-        user_text_indexes = [i - 1 for i in input_num_cards]
-        variable=0
-        for card_i in  user_text_indexes:
-            user_card.append(user_cards[card_i][0:-2])
-
-        for card in user_card:                   #перевод козырных карт
-            if int(card) < 20:
-                user_card_sorted.append(card)
+                print('ошибка')
+                sleep(1.75)
+        elif user_text_general == '4':
+            if len(layer_down)>0:
+                print_all_card_tab(bot_cards,'Карты противника:',user_cards,'Твои карты:',layer_down,discard_layer_up,discard_layer_down)
+                print('выбери карту, которую хочешь забрать')
+                layer_down_card_index=int(input('--- '))-1
+                selected_layer_down_card=layer_down[layer_down_card_index]
+                layer_down.remove(selected_layer_down_card)
+                user_cards.append(selected_layer_down_card)
             else:
-                user_card_sorted.append(str(int(card) - 20))
-
-        for card in user_card_sorted:
-            if card in discard_layer_duo_sorting_with_trump_card and len(discard_layer_duo)>0:
-                variable+=1
-
-        similar_num=set([])
-        if len(discard_layer_duo)==0 or variable==0:        #надо делать если discard равен нулю или если
-            for num_cards in input_num_cards:      #перебор номеров
-                index_cards=num_cards-1            #номера становятся индексами
-                if user_cards[index_cards][-2:]==trump_card[-2:]:  #если масть козырная
-                    user_cards_trump=int(user_cards[index_cards][0:-2])-20 # номер карты расшифровывается в нормальный вид
-                    similar_num.add(user_cards_trump)                      # и идет в сравнение
-                    layer_down.append(user_cards[index_cards])             # а в layer_down идет обычная карта
-                else:                                              # если масть не козырная
-                    similar_num.add(int(user_cards[index_cards][0:-2]))    # номер карты идет в сравнение
-                    layer_down.append(user_cards[index_cards])             # а в layer_down идет обычная карта
-        else:
-            for num_cards in input_num_cards:
-                index_cards = num_cards - 1
-                layer_down.append(user_cards[index_cards])
-        if len(similar_num)>1 or (variable!=len(input_num_cards) and len(discard_layer_duo)>0):          #проверка! если в сравнении номера карт разные то все начинается заново и layer_down обнуляется                            ОШИБКА !!!!!!!!!!
-            print('ошибка')
-            print()
-            layer_down.clear()
-            first_player_turn()
-            return
-        for num_cards in input_num_cards:     # замена всех выбранных карт в картах игрока на '0'
-            index_cards=num_cards-1
-            user_cards.insert(index_cards,'0')
-            user_cards.pop(index_cards+1)
-
-        user_cards_none_0=[]
-        for card in user_cards:            #все остальное убирает '0' из карт игрока
-            if card!='0':
-                user_cards_none_0.append(card)
-        user_cards=user_cards_none_0
+                print('ошибка')
+                sleep(1.75)
 
 
 def bot_defense_turn(): # реагирование бота на карты в layer_down и ответ на них. все карты идут в биту при отбивании
     global bot_cards
     global layer_down
     global layer_up
+    global discard_layer_down
+    global discard_layer_up
     print('Бот думает')
     sleep(1.75)
     layer_down.sort(key=lambda x:x[0:-2])
@@ -511,9 +493,10 @@ def player_defense_turn():
     global discard_layer_up
     player_defense_turn_check=True
     while player_defense_turn_check:
-        print_all_card_tab(bot_cards, '                 Карты противника:', user_cards, '                 Твои карты:',layer_down, discard_layer_up, discard_layer_down)
+        print_all_card_tab(bot_cards,'Карты противника:',user_cards,'Твои карты:',layer_down,discard_layer_up,discard_layer_down)
+        print('ты отбиваешься')
         print('шо ты хочешь сделать:')
-        print('1-положить карту 2-завершить ход 3-взять все карты сибе')
+        print('1-положить карту, 2-завершить ход, 3-взять')
         user_text=input('--- ')
         if user_text == '1':
             if len(layer_down)==0:
@@ -521,10 +504,10 @@ def player_defense_turn():
                 sleep(1.75)
                 continue
             while True:
-                print_all_card_tab(bot_cards, '                 Карты противника:', user_cards,'                 Твои карты:', layer_down, discard_layer_up, discard_layer_down)
+                print_all_card_tab(bot_cards,'Карты противника:',user_cards,'Твои карты:',layer_down,discard_layer_up,discard_layer_down)
                 print('напиши номер своей карты')
                 user_card_index=int(input('--- '))-1
-                print_all_card_tab(bot_cards, '                 Карты противника:', user_cards,'                 Твои карты:', layer_down, discard_layer_up, discard_layer_down)
+                print_all_card_tab(bot_cards,'Карты противника:',user_cards,'Твои карты:',layer_down,discard_layer_up,discard_layer_down)
                 print('напиши номер карты, которую ты будешь отбивать (отбитые карты не считаются)')
                 layer_down_card_index=int(input('--- '))-1
                 if int(user_cards[user_card_index][0:-2])>int(layer_down[layer_down_card_index][0:-2]) and user_cards[user_card_index][-1]==layer_down[layer_down_card_index][-1] or int(user_cards[user_card_index][0:-2])-10>int(layer_down[layer_down_card_index][0:-2]):
@@ -535,14 +518,14 @@ def player_defense_turn():
                     break
                 else:
                     print('ошибка')
-                    sleep(2)
+                    sleep(1.75)
                     break
         elif user_text == '2':
             if len(layer_down)==0:
                 player_defense_turn_check=False
             else:
                 print('ошибка')
-                sleep(2)
+                sleep(1.75)
         elif user_text == '3':
             user_cards.extend(layer_down)
             layer_down.clear()
@@ -609,7 +592,7 @@ def giveaway(turn):
         bot_cards.extend(cards[0:what_need_bot_card])
         del cards[0:what_need_bot_card]
     sleep(2)
-    print_all_card_tab(bot_cards, '                 Карты противника:', user_cards, '                 Твои карты:',layer_down, discard_layer_up, discard_layer_down)
+    print_all_card_tab(bot_cards,'Карты противника:',user_cards,'Твои карты:',layer_down,discard_layer_up,discard_layer_down)
     if len(cards)!=0:
         print('роздача карт')
     sleep(2)
@@ -674,28 +657,21 @@ while True:                            #цикл ходов
     print_all_card_tab(bot_cards,'Карты противника:',user_cards,'Твои карты:',layer_down,discard_layer_up,discard_layer_down)
     first_player_turn()
     print('Ход игрока')
-    if win()==True:
-        break
     print_all_card_tab(bot_cards, 'Карты противника:', user_cards, 'Твои карты:',layer_down, discard_layer_up, discard_layer_down)
     bot_defense_turn()
     print('Ход игрока')
     print_all_card_tab(bot_cards,'Карты противника:',user_cards,'Твои карты:',layer_down,discard_layer_up,discard_layer_down)
     bot_cards_len_after = len(bot_cards)
-    if bot_cards_len_before>bot_cards_len_after:
+    if bot_cards_len_before>=bot_cards_len_after:
         user_can_attack=cycle_attack_check(discard_layer_up,discard_layer_down,user_cards)
     elif len(user_cards)==0:
         user_can_attack = False
     else:
         user_can_attack=True
         giveaway('игрок')
-    if user_can_attack and bot_cards_len_before < bot_cards_len_after:
-        print('Ты можешь сделать ход еще раз ')
-        sleep(1.75)
-    elif user_can_attack:
-        print('Ты можешь сделать ход еще раз ("нет" если не будешь,остальные символы означают "да")')
-        user_command = input('--- ')
-        if user_command.lower() == 'нет':
-            user_can_attack = False
+    if user_can_attack:
+        print('ты можешь сделать еще один ход')
+        sleep(2) # 2
     if win()==True:
         break
     while user_can_attack:
@@ -706,29 +682,23 @@ while True:                            #цикл ходов
         print_all_card_tab(bot_cards,'Карты противника:',user_cards,'Твои карты:',layer_down,discard_layer_up,discard_layer_down)
         first_player_turn()
         print('Ход игрока')
-        if win() == True:
-            break
         print_all_card_tab(bot_cards, 'Карты противника:', user_cards, 'Твои карты:',layer_down, discard_layer_up, discard_layer_down)
         bot_defense_turn()
         print('Ход игрока')
         print_all_card_tab(bot_cards,'Карты противника:',user_cards,'Твои карты:',layer_down,discard_layer_up,discard_layer_down)
         bot_cards_len_after = len(bot_cards)
-        if bot_cards_len_before > bot_cards_len_after:
-            user_can_attack = cycle_attack_check(discard_layer_up, discard_layer_down, user_cards)
+        if bot_cards_len_before>=bot_cards_len_after:
+            user_can_attack=cycle_attack_check(discard_layer_up, discard_layer_down, user_cards)
 
         elif len(user_cards) == 0:
             user_can_attack = False
         else:
             user_can_attack = True
             giveaway('игрок')
-        if user_can_attack and bot_cards_len_before<bot_cards_len_after:
-            print('Ты можешь сделать ход еще раз ')
+        if user_can_attack :
+            print('Ты можешь сделать еще один ход')
+            sleep(2)  # 2
         #                                                                            игрок берет карты с колоды(ходивший)
-        elif user_can_attack:
-            print('Ты можешь сделать ход еще раз ("нет" если не будешь,остальные символы означают "да")')
-            user_command=input('--- ')
-            if user_command.lower()=='нет':
-                user_can_attack=False
     discard_layer_down.clear()
     discard_layer_up.clear()
     if win()==True:
@@ -739,8 +709,6 @@ while True:                            #цикл ходов
     print_all_card_tab(bot_cards, 'Карты противника:', user_cards, 'Твои карты:',layer_down, discard_layer_up, discard_layer_down)
     first_bot_turn()
     print('Ход бота')
-    if win()==True:
-        break
     print_all_card_tab(bot_cards, 'Карты противника:', user_cards, 'Твои карты:',layer_down, discard_layer_up, discard_layer_down)
     player_defense_turn()
     print('Ход бота')
@@ -764,8 +732,6 @@ while True:                            #цикл ходов
         print_all_card_tab(bot_cards, 'Карты противника:', user_cards, 'Твои карты:',layer_down, discard_layer_up, discard_layer_down)
         first_bot_turn()
         print('Ход бота')
-        if win() == True:
-            break
         print_all_card_tab(bot_cards, 'Карты противника:', user_cards, 'Твои карты:',layer_down, discard_layer_up, discard_layer_down)
         player_defense_turn()
         print('Ход бота')
@@ -783,8 +749,6 @@ while True:                            #цикл ходов
         break
     discard_layer_down.clear()
     discard_layer_up.clear()
-    if win()==True:
-        break
     giveaway('бот')
-
+sleep(10)
 # :)
