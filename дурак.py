@@ -208,9 +208,7 @@ def print_battle_cards(layer_down_cards,discard_up_cards,discard_down_cards):
     p0 =['                   ']*len_discard_cards
     p2_1=switch_cards_values(discard_up_cards, p2, 5)
     p8_1=switch_cards_values(discard_up_cards, p8, 8)
-    print(p8_1)
     p8_2=switch_cards_suit_alt(discard_down_cards,p8_1,13)
-    print(p8_2)
     p9_1=switch_cards_values(discard_down_cards,p9,12)
     p3_1=switch_cards_suit(discard_up_cards, p3, 6)
     p5_1=switch_cards_suit(discard_up_cards,p5,8)
@@ -316,7 +314,10 @@ def print_battle_cards(layer_down_cards,discard_up_cards,discard_down_cards):
     print(battle_unification(i8_1)+unification_alt(p8_2))
     print(battle_unification(i9_1)+unification_alt(p9_1))
     print(battle_unification(i10)+unification_alt(p10))
-    print('     Козырь:'+'        Номера:'+battle_unification(p0))
+    if len(layer_down)>0:
+        print('     Козырь:'+'        Номера:'+battle_unification(p0))
+    else:
+        print('     Козырь:')
     print()
 
 ############################################################################################################################################################################################################################
@@ -545,7 +546,7 @@ def player_defense_turn():
                 continue
             while True:
                 print_all_card_tab(bot_cards,'Карты противника:',user_cards,'Твои карты:',layer_down,discard_layer_up,discard_layer_down)
-                print('выбери номер карты, которую хочешь положить')
+                print('напиши номер СВОЕЙ карты, которую хочешь положить')
                 user_card_index=int(input('--- '))-1
                 print_all_card_tab(bot_cards,'Карты противника:',user_cards,'Твои карты:',layer_down,discard_layer_up,discard_layer_down)
                 print('напиши номер карты, которую ты будешь отбивать (уже отбитые карты не считаются!!!!!!!!!)')
@@ -680,7 +681,7 @@ bot_cards=cards[0:6]    # берется 6 начальных карт из ко
 del cards[0:6]
 
 #bot_cards=['23:К','23:П','23:Ч','3:Б','2:Б']
-#user_cards=['1:П','1:Ч','1:Б','2:Ч','22:К','3:П']
+#user_cards=['1:П','1:Ч','1:Б','2:Ч','22:К','3:П','1:Ч','1:Б','2:Ч','22:К','3:П']
 #layer_up=[]
 #layer_down=['3:П','1:П','1:Ч','1:Б','2:Ч','22:К','3:П','1:П','1:Ч','1:Б','2:Ч','22:К','3:П']
 #discard_layer_down=['23:К','9:Б']
