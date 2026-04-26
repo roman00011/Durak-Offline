@@ -1,3 +1,4 @@
+import os
 from random import *
 from time import *
 #                                                                          вывод карт
@@ -165,8 +166,9 @@ def print_unknown_cards(cards,text):        # карты противника
 
 
 def print_all_card_tab(bot_cards,text,user_cards,text1,layer_down,discard_layer_up,discard_layer_down):
-    for i in range(10):
-        print()
+    #for i in range(10):
+    #    print()
+    os.system('cls')
     print_unknown_cards(bot_cards,text)
     print_battle_cards(layer_down, discard_layer_up, discard_layer_down)
     print_cards(user_cards,text1)
